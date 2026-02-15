@@ -38,6 +38,10 @@ app.use('/api/auth', authRoutes);
 const userRoutes = require('./routes/userRoutes');
 app.use('/api/users', userRoutes);
 
+// Post routes
+const postRoutes = require('./routes/postRoutes');
+app.use('/api/posts', postRoutes);
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

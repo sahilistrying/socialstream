@@ -1,99 +1,132 @@
-import React from 'react';
-import { Code2, GitCommit, MessageCircle, Repeat2, ThumbsUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MessageCircle, Repeat2, ThumbsUp } from 'lucide-react';
+import api from '../api.js';
 
-function PostCard({ post }) {
-  const isSystem = post.type === 'system';
+function PostCard({ post, onPostUpdated }) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
+  const [isLiking, setIsLiking] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  // Get current user ID from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('socialstream_user');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setCurrentUserId(parsed._id || parsed.id);
+      } catch (e) {
+        console.error('Failed to parse stored user:', e);
+      }
+    }
+  }, []);
+
+  // Check if current user has liked this post
+  useEffect(() => {
+    if (currentUserId && post.likes) {
+      const liked = post.likes.some((likeId) => {
+        const id = typeof likeId === 'object' && likeId !== null ? likeId._id || likeId.id : likeId;
+        return String(id) === String(currentUserId);
+      });
+      setIsLiked(liked);
+    }
+    setLikeCount(post.likes?.length || 0);
+  }, [post.likes, currentUserId]);
+
+  // Format relative time (e.g., "2h ago", "3d ago")
+  const formatRelativeTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes}m ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours}h ago`;
+    } else if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days}d ago`;
+    } else {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks}w ago`;
+    }
+  };
+
+  const handleLike = async () => {
+    if (isLiking || !currentUserId) return;
+
+    setIsLiking(true);
+    try {
+      const res = await api.put(`/posts/${post._id}/like`);
+      if (onPostUpdated) {
+        onPostUpdated(res.data);
+      }
+      setIsLiked(!isLiked);
+      setLikeCount(res.data.likes?.length || 0);
+    } catch (err) {
+      console.error('Error toggling like:', err);
+      if (err.response?.status === 401) {
+        alert('Please log in to like posts');
+      }
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const author = post.author || {};
+  const authorName = author.fullName || author.username || 'Unknown';
+  const authorInitials = authorName[0].toUpperCase();
+  const authorSubtitle = author.rankTitle || 'Member';
+  const relativeTime = formatRelativeTime(post.createdAt || new Date());
 
   return (
-    <article
-      className={[
-        'overflow-hidden rounded-xl border bg-white text-sm',
-        isSystem ? 'border-violet-300/70 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-slate-50' : 'border-slate-200',
-      ].join(' ')}
-    >
-      <div className={isSystem ? 'border-b border-violet-500/40 px-4 py-3' : 'border-b border-slate-100 px-4 py-3'}>
+    <article className="overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-sm">
+      <div className="border-b border-slate-100 px-4 py-3">
         <div className="flex items-start gap-3">
-          <div
-            className={[
-              'flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold',
-              isSystem
-                ? 'bg-gradient-to-br from-violet-500 via-fuchsia-500 to-amber-400 text-slate-950'
-                : 'bg-slate-900 text-white',
-            ].join(' ')}
-          >
-            {post.initials}
-          </div>
+          {author.profilePicture ? (
+            <img
+              src={author.profilePicture}
+              alt={authorName}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+              {authorInitials}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <h3 className="truncate text-[13px] font-semibold tracking-tight">
-                {post.author}
+              <h3 className="truncate text-[13px] font-semibold tracking-tight text-slate-900">
+                {authorName}
               </h3>
-              {isSystem && (
-                <span className="rounded-full border border-violet-400/60 bg-violet-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-100">
-                  System
-                </span>
-              )}
             </div>
-            <p className={isSystem ? 'text-[11px] text-violet-100/80' : 'text-[11px] text-slate-500'}>
-              {post.subtitle}
-            </p>
-            <p className={isSystem ? 'mt-1 text-[11px] text-violet-200/80' : 'mt-1 text-[11px] text-slate-400'}>
-              {post.time} • {post.visibility}
-            </p>
+            <p className="text-[11px] text-slate-500">{authorSubtitle}</p>
+            <p className="mt-1 text-[11px] text-slate-400">{relativeTime}</p>
           </div>
         </div>
       </div>
 
-      <div className={isSystem ? 'px-4 pb-3 pt-2 text-[13px] text-slate-50' : 'px-4 pb-3 pt-2 text-[13px] text-slate-800'}>
-        {post.icon === 'code' && (
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] text-linkedinBlue">
-            <Code2 size={14} />
-            <span className="font-medium">Project Update</span>
-          </div>
-        )}
-        {post.icon === 'leetcode' && (
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] text-amber-300">
-            <Code2 size={14} />
-            <span className="font-medium">LeetCode</span>
-          </div>
-        )}
-        {post.icon === 'github' && (
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] text-emerald-300">
-            <GitCommit size={14} />
-            <span className="font-medium">GitHub Activity</span>
-          </div>
-        )}
+      <div className="px-4 pb-3 pt-2 text-[13px] text-slate-800">
         <p className="whitespace-pre-line">{post.content}</p>
-
-        {post.tags?.length > 0 && (
-          <div className={isSystem ? 'mt-2 flex flex-wrap gap-1.5 text-[11px]' : 'mt-2 flex flex-wrap gap-1.5 text-[11px]'}>
-            {post.tags.map((tag) => (
-              <span
-                key={tag}
-                className={
-                  isSystem
-                    ? 'rounded-full bg-slate-800/80 px-2 py-0.5 text-violet-100'
-                    : 'rounded-full bg-slate-100 px-2 py-0.5 text-slate-600'
-                }
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
-      <footer
-        className={
-          isSystem
-            ? 'flex items-center justify-between border-t border-violet-500/40 bg-slate-950/60 px-3.5 py-2.5 text-[11px] text-slate-200'
-            : 'flex items-center justify-between border-t border-slate-100 bg-slate-50 px-3.5 py-2.5 text-[11px] text-slate-500'
-        }
-      >
+      <footer className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-3.5 py-2.5 text-[11px] text-slate-500">
         <div className="flex items-center gap-4">
-          <button className="inline-flex items-center gap-1 hover:text-linkedinBlue">
-            <ThumbsUp size={14} />
-            <span>Like</span>
+          <button
+            onClick={handleLike}
+            disabled={isLiking || !currentUserId}
+            className={`inline-flex items-center gap-1 transition-colors ${
+              isLiked
+                ? 'text-linkedinBlue'
+                : 'hover:text-linkedinBlue'
+            } disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <ThumbsUp size={14} className={isLiked ? 'fill-linkedinBlue' : ''} />
+            <span>{likeCount > 0 ? likeCount : ''} Like{likeCount !== 1 ? 's' : ''}</span>
           </button>
           <button className="inline-flex items-center gap-1 hover:text-linkedinBlue">
             <MessageCircle size={14} />
@@ -103,10 +136,6 @@ function PostCard({ post }) {
             <Repeat2 size={14} />
             <span>Repost</span>
           </button>
-        </div>
-        <div className="text-[10px] text-slate-400">
-          {post.metrics.views.toLocaleString()} views • {post.metrics.auraDelta > 0 ? '+' : ''}
-          {post.metrics.auraDelta} Aura
         </div>
       </footer>
     </article>
