@@ -13,6 +13,8 @@ function generateToken(user) {
       id: user._id,
       username: user.username,
       email: user.email,
+      college: user.college || '',
+      onboardingComplete: !!user.onboardingComplete,
     },
     JWT_SECRET,
     { expiresIn: '7d' },

@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema(
     fullName: { type: String, trim: true },
     bio: { type: String, default: '' },
     profilePicture: { type: String, default: '' },
+    college: { type: String, default: '' },
+    onboardingComplete: { type: Boolean, default: false },
 
     // Social Handles
     githubHandle: { type: String, default: '' },

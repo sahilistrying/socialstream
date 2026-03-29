@@ -118,6 +118,12 @@ function RightSidebar() {
               <p className="text-[11px] text-slate-500">Compete to multiply Aura</p>
             </div>
           </div>
+          <Link
+            to="/contests"
+            className="text-[11px] font-medium text-linkedinBlue hover:underline"
+          >
+            View all
+          </Link>
         </header>
 
         <ul className="divide-y divide-slate-100">

@@ -2,6 +2,39 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { updateUserAura } = require('../services/auraService');
+const { authenticate } = require('../middleware/auth');
+
+// PUT /api/users/onboarding - Logged-in user only
+router.put('/onboarding', authenticate, async (req, res) => {
+  try {
+    const { fullName, bio, college, leetcodeUsername, codeforcesHandle, githubUsername } = req.body;
+
+    const updateFields = {
+      onboardingComplete: true,
+    };
+    if (typeof fullName !== 'undefined') updateFields.fullName = fullName;
+    if (typeof bio !== 'undefined') updateFields.bio = bio;
+    if (typeof college !== 'undefined') updateFields.college = college;
+    if (typeof leetcodeUsername !== 'undefined') updateFields.leetcodeHandle = leetcodeUsername;
+    if (typeof codeforcesHandle !== 'undefined') updateFields.codeforcesHandle = codeforcesHandle;
+    if (typeof githubUsername !== 'undefined') updateFields.githubHandle = githubUsername;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updateFields },
+      { new: true },
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error('Error updating onboarding:', err.message);
+    res.status(500).json({ error: 'Failed to save onboarding' });
+  }
+});
 
 // GET /api/users/leaderboard - Top users by Aura
 router.get('/leaderboard', async (req, res) => {
