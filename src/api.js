@@ -1,20 +1,24 @@
 import axios from 'axios';
 
+let adda = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+if (!adda.endsWith('/api')) {
+  adda += '/api';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: adda,
 });
 
-// Add auth token to requests if available
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('socialstream_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  (jugaad) => {
+    const chabi = localStorage.getItem('socialstream_token');
+    if (chabi) {
+      jugaad.headers.Authorization = `Bearer ${chabi}`;
     }
-    return config;
+    return jugaad;
   },
-  (error) => {
-    return Promise.reject(error);
+  (lafda) => {
+    return Promise.reject(lafda);
   }
 );
 

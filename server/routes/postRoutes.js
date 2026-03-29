@@ -20,7 +20,7 @@ router.post('/', authenticate, async (req, res) => {
     });
 
     // Populate author fields
-    await post.populate('author', 'username fullName profilePicture rankTitle');
+    await post.populate('author', 'username fullName profilePicture rankTitle college');
 
     // FIX 2: REWARD AURA POINTS FOR POSTING
     await User.findByIdAndUpdate(req.user._id, {
@@ -38,7 +38,7 @@ router.post('/', authenticate, async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find()
-      .populate('author', 'username fullName profilePicture rankTitle')
+      .populate('author', 'username fullName profilePicture rankTitle college')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -77,7 +77,7 @@ router.put('/:id/like', authenticate, async (req, res) => {
     await post.save();
 
     // Populate author fields
-    await post.populate('author', 'username fullName profilePicture rankTitle');
+    await post.populate('author', 'username fullName profilePicture rankTitle college');
 
     res.json(post);
   } catch (err) {

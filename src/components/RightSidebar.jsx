@@ -3,151 +3,167 @@ import { Link } from 'react-router-dom';
 import { Award, CalendarClock, ChevronRight, Trophy } from 'lucide-react';
 
 const leaderboard = [
-  {
-    id: 1,
-    name: 'Safiullah',
-    handle: '@safiullah',
-    aura: 4203,
-    streak: 12,
-    rankDelta: '+2 today',
-  },
-  {
-    id: 2,
-    name: 'Samhith',
-    handle: '@samhith',
-    aura: 3870,
-    streak: 9,
-    rankDelta: '+1 today',
-  },
-  {
-    id: 3,
-    name: 'BalaKrishna',
-    handle: '@Balakrik',
-    aura: 6969,
-    streak: 69,
-    rankDelta: '—',
-  },
+  { id: 1, name: 'Safiullah', handle: '@safiullah', aura: 4203, streak: 12, rankDelta: '+2 today' },
+  { id: 2, name: 'Samhith', handle: '@samhith', aura: 3870, streak: 9, rankDelta: '+1 today' },
+  { id: 3, name: 'BalaKrishna', handle: '@Balakrik', aura: 6969, streak: 69, rankDelta: '—' },
 ];
+
+const PLATFORM_COLORS = { Codeforces: '#3b82f6', LeetCode: '#f59e0b', CodeChef: '#8b5cf6' };
 
 const contests = [
-  {
-    id: 1,
-    title: 'Codeforces Round #980 (Div. 2)',
-    platform: 'Codeforces',
-    time: 'Today • 7:30 PM IST',
-    auraReward: '+120 Aura for top 25%',
-  },
-  {
-    id: 2,
-    title: 'LeetCode Weekly Contest 420',
-    platform: 'LeetCode',
-    time: 'Sunday • 8:00 AM IST',
-    auraReward: '+80 Aura for 4+ solves',
-  },
+  { id: 1, title: 'Codeforces Round #980 (Div. 2)', platform: 'Codeforces', time: 'Today • 7:30 PM IST', auraReward: '+120 Aura for top 25%' },
+  { id: 2, title: 'LeetCode Weekly Contest 420', platform: 'LeetCode', time: 'Sunday • 8:00 AM IST', auraReward: '+80 Aura for 4+ solves' },
 ];
 
-function RightSidebar() {
+const RANK_COLORS = ['#f59e0b', '#94a3b8', '#b45309'];
+
+function RightSidebar({ theme }) {
+  const accent = theme?.accent || '#7c3aed';
+
   return (
-    <div className="space-y-3">
-      {/* Community Leaderboard */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <header className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-amber-400 via-yellow-300 to-rose-300 text-slate-900">
-              <Trophy size={14} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      {/* Leaderboard */}
+      <section style={{
+        borderRadius: 18, overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.07)',
+        background: '#111118',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Trophy size={14} color="#000" />
             </div>
             <div>
-              <h3 className="text-[13px] font-semibold tracking-tight text-slate-900">
-                Community Leaderboard
-              </h3>
-              <p className="text-[11px] text-slate-500">Top CVR students by Aura</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>Community Leaderboard</p>
+              <p style={{ fontSize: 11, color: '#4b5563' }}>Top CVR students by Aura</p>
             </div>
           </div>
-          <Link
-            to="/leaderboard"
-            className="text-[11px] font-medium text-linkedinBlue hover:underline"
-          >
-            View full leaderboard
+          <Link to="/leaderboard" style={{ fontSize: 11, color: accent, textDecoration: 'none', fontWeight: 500 }}>
+            View full
           </Link>
-        </header>
+        </div>
 
-        <ul className="divide-y divide-slate-100">
-          {leaderboard.map((user, index) => (
-            <li key={user.id} className="flex items-center justify-between px-4 py-2.5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
+        <div>
+          {leaderboard.map((user, i) => (
+            <div key={user.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 16px',
+              borderBottom: i < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+              borderLeft: `3px solid ${RANK_COLORS[i]}`,
+              transition: 'background 0.15s',
+              cursor: 'pointer',
+            }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 30, height: 30, borderRadius: '50%',
+                  background: '#1a1a2a',
+                  border: `2px solid ${RANK_COLORS[i]}40`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 700, color: 'white',
+                }}>
                   {user.name[0]}
                 </div>
-                <div className="leading-tight">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[12px] font-medium text-slate-900">{user.name}</span>
-                    {index === 0 && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                        <Award size={11} />
-                        #1
-                      </span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'white' }}>{user.name}</span>
+                    {i === 0 && (
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 99,
+                        background: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+                        border: '1px solid rgba(245,158,11,0.3)',
+                      }}>👑 #1</span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-500">{user.handle}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-400">
-                    Streak: <span className="font-medium text-slate-600">{user.streak} days</span> •{' '}
-                    <span className="text-emerald-500">{user.rankDelta}</span>
+                  <p style={{ fontSize: 10, color: '#4b5563' }}>
+                    {user.handle} • Streak: <span style={{ color: '#f59e0b' }}>{user.streak}d</span>
+                    {user.rankDelta !== '—' && <span style={{ color: '#10b981' }}> • {user.rankDelta}</span>}
                   </p>
                 </div>
               </div>
-              <div className="text-right text-[11px] text-slate-500">
-                <p className="font-semibold text-slate-900">{user.aura.toLocaleString()} Aura</p>
-                <p className="text-[10px] text-slate-400">Today&apos;s top {index + 1}</p>
-              </div>
-            </li>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>
+                {user.aura.toLocaleString()}
+              </p>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
-      {/* Upcoming Contests */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <header className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-500 via-sky-500 to-emerald-400 text-white">
-              <CalendarClock size={14} />
+      {/* Contests */}
+      <section style={{
+        borderRadius: 18, overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.07)',
+        background: '#111118',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: 'linear-gradient(135deg,#06b6d4,#3b82f6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <CalendarClock size={14} color="#fff" />
             </div>
             <div>
-              <h3 className="text-[13px] font-semibold tracking-tight text-slate-900">
-                Upcoming Contests
-              </h3>
-              <p className="text-[11px] text-slate-500">Compete to multiply Aura</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>Upcoming Contests</p>
+              <p style={{ fontSize: 11, color: '#4b5563' }}>Compete to multiply Aura</p>
             </div>
           </div>
-          <Link
-            to="/contests"
-            className="text-[11px] font-medium text-linkedinBlue hover:underline"
-          >
+          <Link to="/contests" style={{ fontSize: 11, color: accent, textDecoration: 'none', fontWeight: 500 }}>
             View all
           </Link>
-        </header>
+        </div>
 
-        <ul className="divide-y divide-slate-100">
-          {contests.map((contest) => (
-            <li key={contest.id} className="px-4 py-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-[12px] font-medium text-slate-900">{contest.title}</p>
-                  <p className="text-[11px] text-slate-500">{contest.platform}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-600">{contest.time}</p>
-                  <p className="mt-1 text-[11px] text-emerald-600">{contest.auraReward}</p>
+        <div>
+          {contests.map((c, i) => {
+            const platformColor = PLATFORM_COLORS[c.platform] || accent;
+            return (
+              <div key={c.id} style={{
+                padding: '12px 16px',
+                borderBottom: i < contests.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                borderLeft: `3px solid ${platformColor}`,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: 'white', marginBottom: 3 }}>{c.title}</p>
+                    <p style={{ fontSize: 11, color: platformColor, marginBottom: 2 }}>{c.platform}</p>
+                    <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 4 }}>{c.time}</p>
+                    <p style={{ fontSize: 11, color: '#10b981' }}>{c.auraReward}</p>
+                  </div>
+                  <button style={{
+                    marginTop: 2, padding: '5px 10px', borderRadius: 8,
+                    background: `${platformColor}15`,
+                    border: `1px solid ${platformColor}35`,
+                    color: platformColor, fontSize: 10, fontWeight: 600,
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    transition: 'background 0.2s',
+                  }}>
+                    Set reminder <ChevronRight size={10} />
+                  </button>
                 </div>
-                <button className="mt-0.5 inline-flex items-center gap-1 rounded-full border border-linkedinBlue/40 bg-linkedinBlue/5 px-2 py-1 text-[10px] font-medium text-linkedinBlue hover:bg-linkedinBlue/10">
-                  <span>Set reminder</span>
-                  <ChevronRight size={12} />
-                </button>
               </div>
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
       </section>
     </div>
   );
 }
 
 export default RightSidebar;
-

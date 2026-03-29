@@ -1,129 +1,180 @@
 import React from 'react';
 import { Flame, Medal, Target, RotateCcw } from 'lucide-react';
 
-function AuraCard({ aura, isRefreshing, onRefresh }) {
+function AuraCard({ aura, isRefreshing, onRefresh, accentColor }) {
   const level = aura?.level || 1;
   const progress = aura?.progress || 0;
   const totalAura = aura?.totalAura || 0;
   const rankTitle = aura?.rankTitle || 'Novice';
   const globalRank = aura?.globalRank || 0;
   const streak = aura?.streak || 0;
+  const accent = accentColor || '#7c3aed';
 
-  const auraStats = [
-    {
-      id: 'rank',
-      label: 'Global Rank',
-      value: globalRank > 0 ? `#${globalRank.toLocaleString()}` : 'Unranked',
-      icon: Medal,
-    },
-    {
-      id: 'streak',
-      label: 'Daily Streak',
-      value: `🔥 ${streak}`,
-      icon: Flame,
-    },
-    {
-      id: 'quest',
-      label: "Today's Quest",
-      value: 'Review 3 PRs',
-      icon: Target,
-    },
+  const stats = [
+    { id: 'rank', label: 'Global Rank', value: globalRank > 0 ? `#${globalRank.toLocaleString()}` : 'Unranked', icon: Medal },
+    { id: 'streak', label: 'Daily Streak', value: `🔥 ${streak}`, icon: Flame },
+    { id: 'quest', label: "Today's Quest", value: 'Review 3 PRs', icon: Target },
   ];
 
   return (
-    <section className="relative overflow-hidden rounded-xl border border-slate-800/60 bg-slate-950/80 p-4 text-slate-50 shadow-aura-glow">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(250,204,21,0.28),transparent_55%),radial-gradient(circle_at_bottom,_rgba(147,51,234,0.55),transparent_55%)]" />
+    <>
+      <style>{`
+        @keyframes auraGlow {
+          0%,100% { opacity:0.6; }
+          50% { opacity:1; }
+        }
+        @keyframes progressShine {
+          0% { background-position:-200% center; }
+          100% { background-position:200% center; }
+        }
+        .aura-progress-fill {
+          background: linear-gradient(90deg, ${accent}, #06b6d4, #f59e0b, ${accent});
+          background-size: 200% auto;
+          animation: progressShine 2s linear infinite;
+        }
+        .aura-orb {
+          animation: auraGlow 3s ease-in-out infinite;
+        }
+        .aura-stat-row {
+          display:flex; align-items:center; justify-content:space-between;
+          padding:9px 12px; border-radius:12px;
+          border:1px solid rgba(255,255,255,0.06);
+          background:rgba(0,0,0,0.3);
+          cursor:pointer;
+          transition:background 0.2s, border-color 0.2s;
+        }
+        .aura-stat-row:hover {
+          background:rgba(255,255,255,0.04);
+          border-color:rgba(255,255,255,0.12);
+        }
+      `}</style>
 
-      <div className="relative space-y-4">
-        <header className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+      <section style={{
+        position: 'relative', overflow: 'hidden',
+        borderRadius: 18,
+        border: `1px solid ${accent}22`,
+        background: 'linear-gradient(145deg,#13131e,#0e0e18)',
+        padding: '20px',
+        boxShadow: `0 0 40px ${accent}18`,
+      }}>
+        {/* Background orb */}
+        <div className="aura-orb" style={{
+          position: 'absolute', top: -40, right: -40,
+          width: 180, height: 180,
+          background: `radial-gradient(circle,${accent}30,transparent 70%)`,
+          filter: 'blur(30px)', pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -20, left: -20,
+          width: 120, height: 120,
+          background: 'radial-gradient(circle,rgba(245,158,11,0.15),transparent 70%)',
+          filter: 'blur(25px)', pointerEvents: 'none',
+        }} />
+
+        <div style={{ position: 'relative' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-amber-200/80">
-                Aura Core
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.25em', textTransform: 'uppercase', color: '#f59e0b', marginBottom: 4 }}>
+                AURA CORE
               </p>
-              <p className="mt-1 text-xs text-slate-300">
-                Your developer reputation across SocialStream
-              </p>
+              <p style={{ fontSize: 12, color: '#6b7280' }}>Your developer reputation</p>
             </div>
-            <button
-              type="button"
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              className="flex h-6 w-6 items-center justify-center rounded-full border border-amber-300/40 bg-amber-400/10 text-amber-100 transition hover:bg-amber-400/20 disabled:cursor-not-allowed disabled:opacity-60"
-              aria-label="Refresh Aura"
-            >
-              <RotateCcw
-                size={14}
-                className={isRefreshing ? 'animate-spin' : ''}
-              />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                style={{
+                  width: 28, height: 28, borderRadius: '50%',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  background: 'rgba(245,158,11,0.08)',
+                  color: '#fbbf24', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.2s',
+                  opacity: isRefreshing ? 0.5 : 1,
+                }}
+              >
+                <RotateCcw size={13} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+              </button>
+              <div style={{
+                padding: '4px 10px', borderRadius: 8,
+                border: `1px solid ${accent}40`,
+                background: `${accent}12`,
+                fontSize: 10, fontWeight: 700,
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: accent,
+              }}>
+                LV{level} {rankTitle}
+              </div>
+            </div>
           </div>
-          <div className="rounded-lg border border-amber-300/50 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-200">
-            Level {level} {rankTitle}
-          </div>
-        </header>
 
-        {/* Total Aura */}
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-medium text-slate-300">Total Aura</p>
-            <p className="mt-1 bg-gradient-to-r from-amber-200 via-yellow-300 to-fuchsia-300 bg-clip-text text-3xl font-semibold text-transparent drop-shadow-[0_0_12px_rgba(234,179,8,0.6)]">
+          {/* Aura count */}
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 4 }}>Total Aura</p>
+            <p style={{
+              fontSize: 36, fontWeight: 900, lineHeight: 1,
+              background: 'linear-gradient(135deg,#fbbf24,#f59e0b,#a78bfa)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 0 12px rgba(245,158,11,0.4))',
+            }}>
               {totalAura.toLocaleString()}
             </p>
-            <p className="mt-1 text-[11px] text-slate-400">+142 today</p>
+            <p style={{ fontSize: 11, color: '#10b981', marginTop: 4 }}>+142 today</p>
           </div>
-          <div className="rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2 text-right text-xs text-violet-100">
-            <p className="text-[10px] uppercase tracking-[0.16em]">Aura Boost</p>
-            <p className="mt-0.5 text-[11px]">Complete 1 quest to multiply XP</p>
-          </div>
-        </div>
 
-        {/* Stats list */}
-        <div className="mt-1 grid grid-cols-1 gap-1.5">
-          {auraStats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <button
-                key={stat.id}
-                className="group flex items-center justify-between rounded-lg border border-slate-700/80 bg-slate-900/60 px-2.5 py-2 text-left text-xs text-slate-200 transition hover:border-amber-300/70 hover:bg-slate-900/90"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-800/90 text-amber-200 shadow-inner shadow-black/40 group-hover:bg-slate-700">
-                    <Icon size={14} />
-                  </span>
-                  <div className="leading-tight">
-                    <p className="text-[11px] font-medium">{stat.label}</p>
-                    <p className="text-[10px] text-slate-400">View details</p>
+          {/* Boost card */}
+          <div style={{
+            padding: '10px 14px', borderRadius: 12,
+            border: '1px solid rgba(124,58,237,0.2)',
+            background: 'rgba(124,58,237,0.08)',
+            marginBottom: 16,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 3 }}>AURA BOOST</p>
+            <p style={{ fontSize: 12, color: '#6b7280' }}>Complete 1 quest to multiply XP</p>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+            {stats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div key={stat.id} className="aura-stat-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8,
+                      background: 'rgba(255,255,255,0.05)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fbbf24',
+                    }}>
+                      <Icon size={14} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 500, color: '#e2e8f0' }}>{stat.label}</p>
+                      <p style={{ fontSize: 10, color: '#4b5563' }}>View details</p>
+                    </div>
                   </div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>{stat.value}</p>
                 </div>
-                <p className="text-[11px] font-semibold text-amber-200 group-hover:text-amber-100">
-                  {stat.value}
-                </p>
-              </button>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Progress bar */}
-        <div className="mt-3 space-y-1.5">
-          <div className="flex items-center justify-between text-[11px] text-slate-300">
-            <p>Next Level</p>
-            <p className="text-amber-200">
-              {progress}% to Level {level + 1}
-            </p>
-          </div>
-          <div className="relative h-2.5 overflow-hidden rounded-full bg-slate-800/80">
-            <div
-              className="h-full bg-aura-gradient transition-all"
-              style={{ width: `${progress}%` }}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(250,250,250,0.30),transparent_55%)] mix-blend-screen" />
+          {/* Progress bar */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <p style={{ fontSize: 11, color: '#6b7280' }}>Next Level</p>
+              <p style={{ fontSize: 11, color: '#fbbf24' }}>{progress}% to Level {level + 1}</p>
+            </div>
+            <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+              <div className="aura-progress-fill" style={{ height: '100%', borderRadius: 99, width: `${progress}%` }} />
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
 
 export default AuraCard;
-

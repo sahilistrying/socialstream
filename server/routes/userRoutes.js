@@ -41,7 +41,7 @@ router.get('/leaderboard', async (req, res) => {
   try {
     const users = await User.find(
       {},
-      'username fullName profilePicture auraPoints rankTitle',
+      'username fullName profilePicture auraPoints rankTitle college',
     )
       .sort({ auraPoints: -1 })
       .limit(50);
@@ -91,7 +91,7 @@ router.post('/:username/refresh', async (req, res) => {
 router.put('/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const { bio, leetcodeHandle, codeforcesHandle, githubHandle, fullName } = req.body;
+    const { bio, leetcodeHandle, codeforcesHandle, githubHandle, fullName , } = req.body;
 
     const updateFields = {};
     if (typeof bio !== 'undefined') updateFields.bio = bio;

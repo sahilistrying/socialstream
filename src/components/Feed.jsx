@@ -3,122 +3,130 @@ import { Image, Sparkles, Video } from 'lucide-react';
 import PostCard from './PostCard.jsx';
 import api from '../api.js';
 
-function Feed() {
+function Feed({ accentColor }) {
+  const accent = accentColor || '#7c3aed';
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [postContent, setPostContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Get current user from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('socialstream_user');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setCurrentUser(parsed);
-      } catch (e) {
-        console.error('Failed to parse stored user:', e);
-      }
-    }
+    if (stored) { try { setCurrentUser(JSON.parse(stored)); } catch {} }
   }, []);
 
-  // Fetch posts on component mount
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await api.get('/posts');
-        setPosts(res.data || []);
-      } catch (err) {
-        console.error('Error fetching posts:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
+    api.get('/posts')
+      .then((r) => setPosts(r.data || []))
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!postContent.trim() || isSubmitting) return;
-
     setIsSubmitting(true);
     try {
       const res = await api.post('/posts', { content: postContent.trim() });
-      // Add new post to the beginning of the list
       setPosts([res.data, ...posts]);
       setPostContent('');
     } catch (err) {
-      console.error('Error creating post:', err);
-      alert(err.response?.data?.error || 'Failed to create post. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+      alert(err.response?.data?.error || 'Failed to create post.');
+    } finally { setIsSubmitting(false); }
   };
 
-  const handlePostUpdated = (updatedPost) => {
-    setPosts(posts.map((p) => (p._id === updatedPost._id ? updatedPost : p)));
-  };
-
-  const userInitials = currentUser
-    ? (currentUser.fullName || currentUser.username || 'U')[0].toUpperCase()
-    : 'U';
+  const userInitial = (currentUser?.fullName || currentUser?.username || 'U')[0].toUpperCase();
 
   return (
-    <div className="space-y-3">
-      {/* Create Post */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      {/* Composer */}
+      <section style={{
+        borderRadius: 16, overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.07)',
+        background: '#111118',
+      }}>
         <form onSubmit={handleSubmitPost}>
-          <div className="flex gap-3 px-4 py-3">
+          <div style={{ display: 'flex', gap: 12, padding: '14px 16px' }}>
             {currentUser?.profilePicture ? (
-              <img
-                src={currentUser.profilePicture}
-                alt={currentUser.fullName || currentUser.username}
-                className="h-10 w-10 rounded-full object-cover"
-              />
+              <img src={currentUser.profilePicture} alt={currentUser.fullName}
+                style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
-                {userInitials}
-              </div>
+              <div style={{
+                width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+                background: '#1e1e2e', border: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, fontWeight: 700, color: 'white',
+              }}>{userInitial}</div>
             )}
             <textarea
               value={postContent}
               onChange={(e) => setPostContent(e.target.value)}
               placeholder="Share what you're building or solving today..."
-              className="flex-1 resize-none rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-[13px] text-slate-900 outline-none ring-linkedinBlue/20 placeholder:text-slate-500 focus:border-linkedinBlue focus:ring"
-              rows={3}
               disabled={isSubmitting}
+              rows={3}
+              style={{
+                flex: 1, resize: 'none', borderRadius: 12,
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#0a0a0f',
+                padding: '10px 14px', fontSize: 13,
+                color: 'white', outline: 'none',
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                fontFamily: 'inherit',
+              }}
+              onFocus={(e) => { e.target.style.borderColor = `${accent}60`; e.target.style.boxShadow = `0 0 0 3px ${accent}18`; }}
+              onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
             />
           </div>
-          <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-2.5 text-[11px] text-slate-500">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 hover:text-linkedinBlue"
-                disabled={isSubmitting}
-              >
-                <Image size={16} />
-                <span>Media</span>
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 hover:text-linkedinBlue"
-                disabled={isSubmitting}
-              >
-                <Video size={16} />
-                <span>Stream</span>
-              </button>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 16px',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            background: 'rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ display: 'flex', gap: 16 }}>
+              {[{ icon: <Image size={15} />, label: 'Media' }, { icon: <Video size={15} />, label: 'Stream' }].map((btn) => (
+                <button key={btn.label} type="button" disabled={isSubmitting}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 12, color: '#6b7280',
+                    transition: 'color 0.2s',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#9ca3af'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+                >
+                  {btn.icon} {btn.label}
+                </button>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1 rounded-full bg-linkedinBlue/5 px-2 py-1 text-[10px] text-linkedinBlue">
-                <Sparkles size={14} />
-                <span>Posting boosts Aura</span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', borderRadius: 99,
+                background: `${accent}15`,
+                border: `1px solid ${accent}30`,
+                fontSize: 11, color: accent,
+              }}>
+                <Sparkles size={12} />
+                Posting boosts Aura
               </div>
               <button
                 type="submit"
                 disabled={!postContent.trim() || isSubmitting}
-                className="rounded-lg bg-linkedinBlue px-4 py-1.5 text-[11px] font-medium text-white shadow-sm shadow-linkedinBlue/40 transition hover:bg-linkedinBlue/90 disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  padding: '6px 18px', borderRadius: 10,
+                  background: `linear-gradient(135deg,${accent},#06b6d4)`,
+                  border: 'none', color: 'white',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  opacity: (!postContent.trim() || isSubmitting) ? 0.5 : 1,
+                  transition: 'opacity 0.2s, transform 0.15s',
+                }}
+                onMouseEnter={(e) => { if (postContent.trim()) e.currentTarget.style.transform = 'scale(1.03)'; }}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
                 {isSubmitting ? 'Posting...' : 'Post'}
               </button>
@@ -127,25 +135,35 @@ function Feed() {
         </form>
       </section>
 
-      {/* Feed posts */}
       {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-sm text-slate-500">Loading posts...</p>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              border: `3px solid ${accent}30`,
+              borderTopColor: accent,
+              animation: 'spin 1s linear infinite',
+            }} />
+            <p style={{ fontSize: 13, color: '#4b5563' }}>Loading posts...</p>
+          </div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-sm text-slate-500">No posts yet. Be the first to share something!</p>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '48px 0', gap: 12,
+        }}>
+          <div style={{ fontSize: 36 }}>✦</div>
+          <p style={{ fontSize: 14, color: '#4b5563' }}>No posts yet. Be the first to share something.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {posts.map((post) => (
-            <PostCard key={post._id} post={post} onPostUpdated={handlePostUpdated} />
-          ))}
-        </div>
+        posts.map((post) => (
+          <PostCard key={post._id} post={post}
+            onPostUpdated={(u) => setPosts(posts.map((p) => p._id === u._id ? u : p))}
+            accentColor={accent} />
+        ))
       )}
     </div>
   );
 }
 
 export default Feed;
-
