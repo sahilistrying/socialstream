@@ -5,8 +5,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Contests from './pages/Contests.jsx';
-import AboutPage from './pages/AboutPage';
-
+import AboutPage from './pages/Aboutpage.jsx';
 
 
 function App() {
